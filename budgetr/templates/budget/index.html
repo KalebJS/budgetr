@@ -211,38 +211,36 @@
                 <!-- end reporter -->
             </div>
 
-            <div class="py-5">
-                <h3>Last month transactions</h3>
-                <p class="lead">Details concerning all transactions this month</p>
-            </div>
 
-            <div class="row g-5">
-                <div class="col-sm-11">
-                    <!-- expenses table with 4 columns: title, value, category, date -->
-                    <table class="table table-hover table-striped">
-                        <thead>
-                        <tr>
-                            <th scope="col">Title</th>
-                            <th scope="col">Expense/Income</th>
-                            <th scope="col">Value</th>
-                            <th scope="col">Category</th>
-                            <th scope="col">Created</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-
-                        {% for item in exp_inc %}
-                            <tr>
-                                <td>{{ item["title"] }}</td>
-                                <td>{{ item["value_type"] }}</td>
-                                <td>${{ item["value"] }}</td>
-                                <td>{{ item["category"] }}</td>
-                                <td>{{ item["created"] }}</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+            <div class="row d-none d-md-block">
+                <div class="py-5">
+                    <h3>Last month transactions</h3>
+                    <p class="lead">Details concerning all transactions this month</p>
                 </div>
+                <!-- expenses table with 4 columns: title, value, category, date -->
+                <table class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Expense/Income</th>
+                        <th scope="col">Value</th>
+                        <th scope="col" class="d-none d-lg-table-cell">Category</th>
+                        <th scope="col" class="d-none d-lg-table-cell">Created</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    {% for item in exp_inc %}
+                        <tr>
+                            <td>{{ item["title"] }}</td>
+                            <td>{{ item["value_type"] }}</td>
+                            <td>${{ item["value"] }}</td>
+                            <td class="d-md-none d-lg-table-cell">{{ item["category"] }}</td>
+                            <td class="d-md-none d-lg-table-cell">{{ item["created"] }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
 
         </main>
