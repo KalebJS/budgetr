@@ -148,7 +148,8 @@
                         <div class="row g-3">
                             <div class="col-12">
                                 <label for="title" class="form-label">Title</label>
-                                <input name="title" type="text" class="form-control" id="title" placeholder="Weekly grocery trip"
+                                <input name="title" type="text" class="form-control" id="title"
+                                       placeholder="Weekly grocery trip"
                                        value="" required>
                                 <div class="invalid-feedback">
                                     Valid title is required
@@ -157,7 +158,8 @@
 
                             <div class="col-sm-6">
                                 <label for="value" class="form-label">Value</label>
-                                <input name="value" type="number" class="form-control" id="value" placeholder="$80.29" value=""
+                                <input name="value" step="0.01" type="number" class="form-control" id="value"
+                                       placeholder="$80.29" value=""
                                        required>
                                 <div class="invalid-feedback">
                                     Valid positive float value required

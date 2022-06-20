@@ -1,0 +1,4 @@
+include budgetr/schema.sql
+graft budgetr/static
+graft budgetr/templates
+global-exclude *.pyc
