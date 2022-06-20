@@ -79,7 +79,7 @@
                 <!-- at a glance -->
                 <div class="col-md-5 col-lg-4 order-md-last">
                     <h4 class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-primary">This month at a glance</span>
+                        <span class="text-primary">This month at a glance (not implemented)</span>
                     </h4>
                     <ul class="list-group mb-3">
                         <li class="list-group-item d-flex justify-content-between lh-sm">
@@ -167,14 +167,14 @@
                             </div>
 
                             <div class="col-sm-6">
-                                <label for="value_type" class="form-label">Expense/Asset</label>
+                                <label for="value_type" class="form-label">Expense/Income</label>
                                 <select name="value_type" class="form-select" id="value_type" required>
                                     <option value="">Choose...</option>
                                     <option>Expense</option>
-                                    <option>Asset</option>
+                                    <option>Income</option>
                                 </select>
                                 <div class="invalid-feedback">
-                                    Valid expense/asset type required
+                                    Valid type required
                                 </div>
                             </div>
 
@@ -193,6 +193,8 @@
                                     <option>Dates</option>
                                     <option>School</option>
                                     <option>Entertainment</option>
+                                    <option>Eating out</option>
+                                    <option>Shopping</option>
                                     <option>Other</option>
                                 </select>
                                 <div class="invalid-feedback">
@@ -215,28 +217,32 @@
             </div>
 
             <div class="row g-5">
-                <!-- expenses table with 4 columns: title, value, category, date -->
-                <table class="table table-hover table-striped">
-                    <thead>
-                    <tr>
-                        <th scope="col">Title</th>
-                        <th scope="col">Value</th>
-                        <th scope="col">Category</th>
-                        <th scope="col">Date</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-
-                    {% for item in exp_inc %}
+                <div class="col-sm-11">
+                    <!-- expenses table with 4 columns: title, value, category, date -->
+                    <table class="table table-hover table-striped">
+                        <thead>
                         <tr>
-                            <td>{{ item["title"] }}</td>
-                            <td>{{ item["value"] }}</td>
-                            <td>{{ item["category"] }}</td>
-                            <td>{{ item["created"] }}</td>
+                            <th scope="col">Title</th>
+                            <th scope="col">Expense/Income</th>
+                            <th scope="col">Value</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Created</th>
                         </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+
+                        {% for item in exp_inc %}
+                            <tr>
+                                <td>{{ item["title"] }}</td>
+                                <td>{{ item["value_type"] }}</td>
+                                <td>${{ item["value"] }}</td>
+                                <td>{{ item["category"] }}</td>
+                                <td>{{ item["created"] }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </main>
