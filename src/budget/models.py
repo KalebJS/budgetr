@@ -11,7 +11,7 @@ class Transaction(BaseModel):
     value_type: str
     id: int = None
     user_id: str = None
-    created: Any = None
+    created: datetime = None
 
     @validator("value_type")
     def has_value_type(cls, v):
@@ -37,17 +37,14 @@ class Transaction(BaseModel):
             raise ValueError("title must be a string")
         return v
 
-    @validator("created")
-    def is_properly_formatted(cls, v):
-        if not isinstance(v, str):
-            v = str(v)
-        try:
-            datetime.strptime(v, "%m-%d-%Y")
-        except ValueError:
-            v = v.split(" ")[0]
-            v = datetime.strptime(v, "%Y-%m-%d").strftime("%m-%d-%Y")
-        return v
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.value = round(self.value, 2)
+
+    @property
+    def formatted_date(self):
+        return self.created.strftime("%m-%d-%Y")
+
+    @property
+    def form_ready_date(self):
+        return self.created.strftime("%Y-%m-%d")

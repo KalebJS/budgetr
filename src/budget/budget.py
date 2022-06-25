@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, render_template, request, flash, url_for, redirect
 from pydantic import ValidationError
 
@@ -38,6 +40,7 @@ def edit(transaction_id):
     if request.method == "POST":
         try:
             transaction = Transaction(**request.form)
+            transaction.created = datetime.strptime(request.form["date"], "%Y-%m-%d")
             db.execute(
                 "UPDATE expense_income SET title = ?, value = ?, category = ?, value_type = ?, created = ? WHERE "
                 "id = ?;",
@@ -54,9 +57,7 @@ def edit(transaction_id):
         except ValidationError as e:
             flash(str(e))
 
-    transaction = Transaction(**db.execute(
-        "SELECT * FROM expense_income WHERE id = ?;", (transaction_id,)
-    ).fetchone())
+    transaction = Transaction(**db.execute("SELECT * FROM expense_income WHERE id = ?;", (transaction_id,)).fetchone())
     return render_template("budget/edit.html", transaction=transaction)
 
 
@@ -66,4 +67,3 @@ def delete(transaction_id):
     db.execute("DELETE FROM expense_income WHERE id = ?;", (transaction_id,))
     db.commit()
     return redirect(url_for("index"))
-

@@ -145,9 +145,9 @@
                             </div>
 
                             <div class="col-sm-6">
-                                <label for="created" class="form-label">Date: <em>{{ transaction.created }}</em></label>
-                                <input name="created" type="date" class="form-control" id="created"
-                                       value="{{ transaction.created }}" required>
+                                <label for="date" class="form-label">Date: <em>{{ transaction.formatted_date }}</em></label>
+                                <input name="date" type="date" class="form-control" id="date"
+                                       value="{{ transaction.form_ready_date }}" required>
                                 <div class="invalid-feedback">
                                     Valid date required
                                 </div>
