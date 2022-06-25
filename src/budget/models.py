@@ -51,4 +51,4 @@ class Transaction(BaseModel):
 
     @property
     def formatted_value(self):
-        return f"{self.value:.2f}"
+        return f"{self.value:,.2f}"
