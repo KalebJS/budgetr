@@ -65,6 +65,15 @@
     <body class="bg-light">
 
     <div class="container">
+        <header class="d-flex justify-content-center py-3">
+            <ul class="nav nav-pills">
+                <li class="nav-item"><a href="/" class="nav-link active" aria-current="page">Dashboard</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Add Item</a></li>
+            </ul>
+        </header>
+    </div>
+
+    <div class="container">
         <main>
             <div class="py-5 text-center">
                 <img class="d-block mx-auto mb-4" src="{{ url_for("static", filename="img/duck.png") }}" alt=""
@@ -230,13 +239,13 @@
                     </thead>
                     <tbody>
 
-                    {% for item in exp_inc %}
-                        <tr>
-                            <td>{{ item["title"] }}</td>
-                            <td>{{ item["value_type"] }}</td>
-                            <td>${{ item["value"] }}</td>
-                            <td class="d-md-none d-lg-table-cell">{{ item["category"] }}</td>
-                            <td class="d-md-none d-lg-table-cell">{{ item["created"] }}</td>
+                    {% for item in transactions %}
+                        <tr data-url="/edit/{{ item.id }}" class="cursor-pointer">
+                            <td>{{ item.title }}</td>
+                            <td>{{ item.value_type }}</td>
+                            <td>${{ item.value }}</td>
+                            <td class="d-md-none d-lg-table-cell">{{ item.category }}</td>
+                            <td class="d-md-none d-lg-table-cell">{{ item.created }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -253,5 +262,7 @@
 
     <script src="{{ url_for("static", filename="js/bootstrap.bundle.min.js") }}"></script>
     <script src="{{ url_for("static", filename="js/form-validation.js") }}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="{{ url_for("static", filename="js/onclick.js") }}"></script>
     </body>
 {% endblock %}
