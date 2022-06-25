@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, validator
 
@@ -10,7 +11,7 @@ class Transaction(BaseModel):
     value_type: str
     id: int = None
     user_id: str = None
-    created: str = None
+    created: Any = None
 
     @validator("value_type")
     def has_value_type(cls, v):
@@ -38,6 +39,8 @@ class Transaction(BaseModel):
 
     @validator("created")
     def is_properly_formatted(cls, v):
+        if not isinstance(v, str):
+            v = str(v)
         try:
             datetime.strptime(v, "%m-%d-%Y")
         except ValueError:
