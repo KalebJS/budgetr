@@ -48,3 +48,7 @@ class Transaction(BaseModel):
     @property
     def form_ready_date(self):
         return self.created.strftime("%Y-%m-%d")
+
+    @property
+    def formatted_value(self):
+        return f"{self.value:.2f}"

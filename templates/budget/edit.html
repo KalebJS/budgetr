@@ -98,9 +98,9 @@
                             </div>
 
                             <div class="col-sm-6">
-                                <label for="value" class="form-label">Value: <em>{{ transaction.value }}</em></label>
+                                <label for="value" class="form-label">Value: <em>{{ transaction.formatted_value }}</em></label>
                                 <input name="value" step="0.01" type="number" class="form-control" id="value"
-                                       placeholder="$80.29" value="{{ transaction.value }}" required>
+                                       placeholder="$80.29" value="{{ transaction.formatted_value }}" required>
                                 <div class="invalid-feedback">
                                     Valid positive float value required
                                 </div>
