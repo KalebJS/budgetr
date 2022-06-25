@@ -240,7 +240,7 @@
                     <tbody>
 
                     {% for item in transactions %}
-                        <tr data-url="/edit/{{ item.id }}" class="cursor-pointer">
+                        <tr data-url="/edit/{{ item.id }}" class="cursor-pointer clickable">
                             <td>{{ item.title }}</td>
                             <td>{{ item.value_type }}</td>
                             <td>${{ item.value }}</td>
