@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, url_for, redirect
 from pydantic import ValidationError
 
-from db import get_db
+from budgetr.db import get_db
 from .models import Transaction
 
 bp = Blueprint("budget", __name__)
