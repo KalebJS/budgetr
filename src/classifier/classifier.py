@@ -1,3 +1,4 @@
+import json
 from collections import defaultdict
 from typing import List, Set, Tuple
 
@@ -96,7 +97,7 @@ def classify(transaction: Transaction) -> Transaction:
 
     # get category label from categories table
     category_result = db.execute("SELECT * FROM categories WHERE id = ?", (category_id,)).fetchone()
-    transaction.category_id = Category(**category_result).label
+    transaction.category_id = Category(**category_result).id
 
     # Update all category mappings weight with this id
     for mapping in category_mapping_list:
@@ -107,15 +108,15 @@ def classify(transaction: Transaction) -> Transaction:
         else:
             category = WeightedCategory(category_id=category_id, weight=1)
             mapping.categories.append(category)
-        mapping_dict = dict(mapping)
+        categories = json.dumps([dict(category) for category in mapping.categories])
         db.execute(
             "UPDATE categorical_mapping SET categories = ? WHERE id = ?;",
-            (mapping_dict["categories"], mapping_dict["id"]),
+            (categories, mapping.id),
         )
         db.commit()
 
     # create new mappings for unmapped words
-    categories = [dict(WeightedCategory(category_id=category_id, weight=1))]
+    categories = json.dumps([dict(WeightedCategory(category_id=category_id, weight=1))])
     for noun in nouns:
         db.execute(
             "INSERT INTO categorical_mapping (word, part_of_speech, categories) VALUES (?, ?, ?);",
@@ -131,22 +132,6 @@ def classify(transaction: Transaction) -> Transaction:
         db.commit()
 
     return transaction
-
-
-def declassify():
-    pass
-
-
-def reclassify():
-    """
-    Reclassify all transactions.
-    """
-    db = get_db()
-    transactions = db.execute("SELECT * FROM expense_income;").fetchall()
-    for transaction in transactions:
-        transaction = classify(Transaction(**transaction))
-        db.execute("UPDATE expense_income SET category = ? WHERE id = ?;", (transaction.category, transaction.id))
-    db.commit()
 
 
 def update_classification(original: Transaction, updated: Transaction) -> None:
@@ -166,21 +151,23 @@ def update_classification(original: Transaction, updated: Transaction) -> None:
 
     # get category mappings for each word in nouns and proper_nouns list
     category_mapping_list: List[CategoryMapping] = []
-    formatted_nouns = [f"'{n}'" for n in nouns]
-    results = db.execute(
-        f"SELECT * FROM categorical_mapping WHERE part_of_speech = ? AND word in ({','.join(formatted_nouns)})",
-        ("NOUN", *nouns),
-    ).fetchall()
-    category_mapping_list.extend([CategoryMapping(**result) for result in results])
-    nouns_not_found = [noun for noun in nouns if noun not in [result["word"] for result in results]]
+    proper_nouns_not_found = set()
+    for pn in proper_nouns:
+        if result := db.execute(
+            "SELECT * FROM categorical_mapping WHERE word = ? AND part_of_speech = ?", (pn, "PROPN")
+        ).fetchone():
+            category_mapping_list.append(CategoryMapping(**result))
+        else:
+            proper_nouns_not_found.add(pn)
 
-    formatted_proper_nouns = [f"'{pn}'" for pn in proper_nouns]
-    results = db.execute(
-        f"SELECT * FROM categorical_mapping WHERE part_of_speech = ? AND word in ({','.join(formatted_proper_nouns)})",
-        ("PROPN", *proper_nouns),
-    ).fetchall()
-    category_mapping_list.extend([CategoryMapping(**result) for result in results])
-    proper_nouns_not_found = [pn for pn in proper_nouns if pn not in [result["word"] for result in results]]
+    nouns_not_found = set()
+    for n in nouns:
+        if result := db.execute(
+            "SELECT * FROM categorical_mapping WHERE word = ? AND part_of_speech = ?", (n, "NOUN")
+        ).fetchone():
+            category_mapping_list.append(CategoryMapping(**result))
+        else:
+            nouns_not_found.add(n)
 
     # de-increment all categories if they are not Unknown
     if original.category_id != -1:
@@ -189,7 +176,7 @@ def update_classification(original: Transaction, updated: Transaction) -> None:
                 if category.category_id == original.category_id:
                     category.weight -= 1
                     break
-            categories = [dict(category) for category in mapping.categories]
+            categories = json.dumps([dict(category) for category in mapping.categories])
             db.execute(
                 "UPDATE categorical_mapping SET categories = ? WHERE id = ?;",
                 (categories, mapping.id),
@@ -197,7 +184,7 @@ def update_classification(original: Transaction, updated: Transaction) -> None:
             db.commit()
 
     # add any new words if necessary
-    categories = [dict(WeightedCategory(category_id=updated.category_id, weight=1))]
+    categories = json.dumps([dict(WeightedCategory(category_id=updated.category_id, weight=1))])
     for noun in nouns_not_found:
         db.execute(
             "INSERT INTO categorical_mapping (word, part_of_speech, categories) VALUES (?, ?, ?);",
@@ -221,7 +208,7 @@ def update_classification(original: Transaction, updated: Transaction) -> None:
         else:
             category = WeightedCategory(category_id=updated.category_id, weight=1)
             mapping.categories.append(category)
-        categories = [dict(category) for category in mapping.categories]
+        categories = json.dumps([dict(category) for category in mapping.categories])
         db.execute(
             "UPDATE categorical_mapping SET categories = ? WHERE id = ?;",
             (categories, mapping.id),

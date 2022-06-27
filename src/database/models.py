@@ -1,5 +1,6 @@
+import json
 from datetime import datetime
-from typing import Any, List
+from typing import Any, List, Union
 
 from pydantic import BaseModel, validator
 
@@ -73,7 +74,7 @@ class CategoryMapping(BaseModel):
     id: int
     word: str
     part_of_speech: str
-    categories: List[WeightedCategory]
+    categories: Union[str, List[WeightedCategory]]
 
     @validator("part_of_speech")
     def part_of_speech_to_upper(cls, v):
@@ -87,3 +88,7 @@ class CategoryMapping(BaseModel):
 
     def __lt__(self, other):
         return self.weight < other.weight
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.categories = [WeightedCategory(**c) for c in json.loads(self.categories)]

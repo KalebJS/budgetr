@@ -26,6 +26,7 @@ def index():
             db.commit()
         except ValidationError as e:
             flash(str(e))
+            raise e
 
     exp_inc_list = db.execute(
         "SELECT * FROM transactions WHERE created BETWEEN datetime('now', 'start of month') AND "
@@ -40,11 +41,11 @@ def index():
 def edit(transaction_id):
     db = get_db()
 
-    original = Transaction(**db.execute("SELECT * FROM transactions WHERE id = ?;", (transaction_id,)).fetchone())
+    transaction = Transaction(**db.execute("SELECT * FROM transactions WHERE id = ?;", (transaction_id,)).fetchone())
     if request.method == "POST":
         try:
             updated = Transaction(**request.form)
-            update_classification(original, updated)
+            update_classification(transaction, updated)
             updated.created = datetime.strptime(request.form["date"], "%Y-%m-%d")
             db.execute(
                 "UPDATE transactions SET title = ?, value = ?, category_id = ?, value_type = ?, created = ? WHERE "
@@ -59,11 +60,12 @@ def edit(transaction_id):
                 ),
             )
             db.commit()
+            transaction = updated
         except ValidationError as e:
             flash(str(e))
 
     categories = DBUtils.get_categories()
-    return render_template("budget/edit.html", transaction=original, categories=categories)
+    return render_template("budget/edit.html", transaction=transaction, categories=categories)
 
 
 @bp.route("/delete/<int:transaction_id>", methods=("GET",))

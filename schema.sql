@@ -54,3 +54,6 @@ create unique index categories_label_uindex
 
 insert into categories (id, label, is_expense, is_annual, is_discretionary)
 values (-1, 'Unknown', 0, 0, 0);
+
+insert into categories (id, label, is_expense, is_annual, is_discretionary)
+values (0, 'Income', 0, 0, 0);
