@@ -28,8 +28,7 @@ create table categorical_mapping
         constraint categorical_mapping_pk
             primary key autoincrement,
     word           text    not null,
-    categories     json    not null,
-    part_of_speech text    not null
+    categories     json    not null
 );
 
 create unique index categorical_mapping_id_uindex

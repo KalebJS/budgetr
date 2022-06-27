@@ -88,65 +88,18 @@
                 <!-- at a glance -->
                 <div class="col-md-5 col-lg-4 order-md-last">
                     <h4 class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-primary">This month at a glance (not implemented)</span>
+                        <span class="text-primary">This month at a glance</span>
                     </h4>
                     <ul class="list-group mb-3">
-                        <li class="list-group-item d-flex justify-content-between lh-sm">
-                            <div>
-                                <h6 class="my-0">Income</h6>
-                                <small class="text-muted">$100 / $400</small>
-                            </div>
-                            <span class="text-muted">25%</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between lh-sm">
-                            <div>
-                                <h6 class="my-0">Groceries</h6>
-                                <small class="text-muted">$1000 / $200</small>
-                            </div>
-                            <span class="text-muted">500%</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between lh-sm">
-                            <div>
-                                <h6 class="my-0">Gas</h6>
-                                <small class="text-muted">$90 / $200</small>
-                            </div>
-                            <span class="text-muted">45%</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between lh-sm">
-                            <div>
-                                <h6 class="my-0">Utilities</h6>
-                                <small class="text-muted">$72 / $72</small>
-                            </div>
-                            <span class="text-muted">100%</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between lh-sm">
-                            <div>
-                                <h6 class="my-0">Repairs</h6>
-                                <small class="text-muted">$0 / $100</small>
-                            </div>
-                            <span class="text-muted">0%</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between lh-sm">
-                            <div>
-                                <h6 class="my-0">Subscriptions</h6>
-                                <small class="text-muted">$10 / $20</small>
-                            </div>
-                            <span class="text-muted">50%</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between lh-sm">
-                            <div>
-                                <h6 class="my-0">Tithing</h6>
-                                <small class="text-muted">$10 / $40</small>
-                            </div>
-                            <span class="text-muted">25%</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between lh-sm">
-                            <div>
-                                <h6 class="my-0">Utilities</h6>
-                                <small class="text-muted">$10 / $40</small>
-                            </div>
-                            <span class="text-muted">25%</span>
-                        </li>
+                        {% for category in categories %}
+                            <li class="list-group-item d-flex justify-content-between lh-sm">
+                                <div>
+                                    <h6 class="my-0">{{ category.label }}</h6>
+                                    <small class="text-muted">${{ category.formatted_total }}</small>
+                                </div>
+                                <span class="text-muted"></span>
+                            </li>
+                        {% endfor %}
                     </ul>
                 </div>
                 <!-- end at a glance -->
@@ -190,7 +143,7 @@
                                 <label for="category_id" class="form-label">Category</label>
                                 <select name="category_id" class="form-select" id="category_id">
                                     {% for category in categories %}
-                                    <option value="{{ category.id }}">{{ category.label }}</option>
+                                        <option value="{{ category.id }}">{{ category.label }}</option>
                                     {% endfor %}
                                 </select>
                                 <div class="invalid-feedback">

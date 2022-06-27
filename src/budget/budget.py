@@ -33,7 +33,7 @@ def index():
         "datetime('now', 'localtime', '+1 day');"
     ).fetchall()
     transactions = [Transaction(**row) for row in exp_inc_list]
-    categories = DBUtils.get_categories()
+    categories = DBUtils.get_total_by_category()
     return render_template("budget/index.html", transactions=transactions, categories=categories)
 
 

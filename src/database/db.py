@@ -62,3 +62,19 @@ class DBUtils:
         db = get_db()
         results = db.execute("SELECT * FROM categories;").fetchall()
         return [Category(**result) for result in results if result["id"] != -1]
+
+    @staticmethod
+    def get_total_by_category() -> List[Category]:
+        db = get_db()
+        categories = DBUtils.get_categories()
+        for category in categories:
+            # within the last month and matching category id
+            category.total = db.execute(
+                "SELECT SUM(value) FROM transactions WHERE created BETWEEN datetime('now', 'start of month') AND "
+                "datetime('now', 'localtime', '+1 day') AND category_id = ?;",
+                (category.id,),
+            ).fetchone()[0]
+            if not category.total:
+                category.total = 0
+
+        return categories

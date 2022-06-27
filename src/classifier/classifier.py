@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from typing import List, Set, Tuple
+from typing import List, Set
 
 import spacy
 
@@ -11,7 +11,7 @@ from src.database.db import get_db
 nlp = spacy.load("en_core_web_sm")
 
 
-def get_words(text: str) -> Tuple[Set[str], Set[str]]:
+def get_words(text: str) -> Set[str]:
     """
     Get the words and proper nouns from a text.
 
@@ -21,27 +21,13 @@ def get_words(text: str) -> Tuple[Set[str], Set[str]]:
     Returns:
         A tuple of two sets of words. The first set contains the nouns, the second set contains the proper nouns.
     """
-    db = get_db()
     doc = nlp(text.lower())
 
-    nouns = set()
-    proper_nouns = set()
-    for token in doc:
-        if token.is_stop:
-            continue
-        if token.pos_ == "NOUN":
-            nouns.add(token.text)
-        elif token.pos_ == "PROPN":
-            proper_nouns.add(token.text)
-
+    words = {token.text for token in doc if not token.is_stop and not token.is_punct and not token.is_space}
     for chunk in doc.noun_chunks:
-        if chunk.root.pos_ not in ["NOUN", "PROPN"]:
-            continue
-        if chunk.text == doc.text:
-            continue
-        nouns.add(chunk.text)
+        words.add(chunk.text)
 
-    return nouns, proper_nouns
+    return words
 
 
 def classify(transaction: Transaction) -> Transaction:
@@ -57,29 +43,19 @@ def classify(transaction: Transaction) -> Transaction:
     db = get_db()
 
     # parse the title for nouns and pronouns that can be used as categories
-    nouns, proper_nouns = get_words(transaction.title)
+    words = get_words(transaction.title)
 
     # get category mappings for each word in nouns and proper_nouns list
     found = set()
     category_mapping_list: List[CategoryMapping] = []
-    for pn in proper_nouns:
+    for word in words:
         if result := db.execute(
-            "SELECT * FROM categorical_mapping WHERE word = ? AND part_of_speech = ?", (pn, "PROPN")
+            "SELECT * FROM categorical_mapping WHERE word = ?", (word,)
         ).fetchone():
             category_mapping_list.append(CategoryMapping(**result))
-            found.add(pn)
+            found.add(word)
 
-    proper_nouns -= found
-
-    found = set()
-    for n in nouns:
-        if result := db.execute(
-            "SELECT * FROM categorical_mapping WHERE word = ? AND part_of_speech = ?", (n, "NOUN")
-        ).fetchone():
-            category_mapping_list.append(CategoryMapping(**result))
-            found.add(n)
-
-    nouns -= found
+    words -= found
 
     # create rankings for each category mapping
     rankings = defaultdict(lambda: 0)
@@ -117,17 +93,10 @@ def classify(transaction: Transaction) -> Transaction:
 
     # create new mappings for unmapped words
     categories = json.dumps([dict(WeightedCategory(category_id=category_id, weight=1))])
-    for noun in nouns:
+    for word in words:
         db.execute(
-            "INSERT INTO categorical_mapping (word, part_of_speech, categories) VALUES (?, ?, ?);",
-            (noun, "NOUN", categories),
-        )
-        db.commit()
-
-    for pn in proper_nouns:
-        db.execute(
-            "INSERT INTO categorical_mapping (word, part_of_speech, categories) VALUES (?, ?, ?);",
-            (pn, "PROPN", categories),
+            "INSERT INTO categorical_mapping (word, categories) VALUES (?, ?);",
+            (word, categories),
         )
         db.commit()
 
@@ -147,27 +116,19 @@ def update_classification(original: Transaction, updated: Transaction) -> None:
 
     db = get_db()
 
-    nouns, proper_nouns = get_words(original.title)
+    words = get_words(original.title)
 
     # get category mappings for each word in nouns and proper_nouns list
     category_mapping_list: List[CategoryMapping] = []
-    proper_nouns_not_found = set()
-    for pn in proper_nouns:
+    found = set()
+    for word in words:
         if result := db.execute(
-            "SELECT * FROM categorical_mapping WHERE word = ? AND part_of_speech = ?", (pn, "PROPN")
+            "SELECT * FROM categorical_mapping WHERE word = ?", (word,)
         ).fetchone():
             category_mapping_list.append(CategoryMapping(**result))
-        else:
-            proper_nouns_not_found.add(pn)
+            found.add(word)
 
-    nouns_not_found = set()
-    for n in nouns:
-        if result := db.execute(
-            "SELECT * FROM categorical_mapping WHERE word = ? AND part_of_speech = ?", (n, "NOUN")
-        ).fetchone():
-            category_mapping_list.append(CategoryMapping(**result))
-        else:
-            nouns_not_found.add(n)
+    words -= found
 
     # de-increment all categories if they are not Unknown
     if original.category_id != -1:
@@ -185,17 +146,10 @@ def update_classification(original: Transaction, updated: Transaction) -> None:
 
     # add any new words if necessary
     categories = json.dumps([dict(WeightedCategory(category_id=updated.category_id, weight=1))])
-    for noun in nouns_not_found:
+    for word in words:
         db.execute(
-            "INSERT INTO categorical_mapping (word, part_of_speech, categories) VALUES (?, ?, ?);",
-            (noun, "NOUN", categories),
-        )
-        db.commit()
-
-    for pn in proper_nouns_not_found:
-        db.execute(
-            "INSERT INTO categorical_mapping (word, part_of_speech, categories) VALUES (?, ?, ?);",
-            (pn, "PROPN", categories),
+            "INSERT INTO categorical_mapping (word, categories) VALUES (?, ?);",
+            (word, categories),
         )
         db.commit()
 

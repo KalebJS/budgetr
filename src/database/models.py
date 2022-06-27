@@ -60,7 +60,11 @@ class Category(BaseModel):
     is_expense: bool
     is_annual: bool
     is_discretionary: bool
+    total: float = None
 
+    @property
+    def formatted_total(self):
+        return f"{self.total:,.2f}"
 
 class WeightedCategory(BaseModel):
     category_id: int
@@ -73,14 +77,7 @@ class WeightedCategory(BaseModel):
 class CategoryMapping(BaseModel):
     id: int
     word: str
-    part_of_speech: str
     categories: Union[str, List[WeightedCategory]]
-
-    @validator("part_of_speech")
-    def part_of_speech_to_upper(cls, v):
-        if v not in ["NOUN", "PROPN"]:
-            raise ValueError("part_of_speech must be one of NOUN or PROPN")
-        return v
 
     @property
     def weight(self):
