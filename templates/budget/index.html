@@ -177,8 +177,7 @@
 
                             <div class="col-sm-6">
                                 <label for="value_type" class="form-label">Expense/Income</label>
-                                <select name="value_type" class="form-select" id="value_type" required>
-                                    <option value="">Choose...</option>
+                                <select name="value_type" class="form-select" id="value_type">
                                     <option>Expense</option>
                                     <option>Income</option>
                                 </select>
@@ -188,23 +187,11 @@
                             </div>
 
                             <div class="col-12">
-                                <label for="category" class="form-label">Category</label>
-                                <select name="category" class="form-select" id="category" required>
-                                    <option value="">Choose...</option>
-                                    <option>Income</option>
-                                    <option>Groceries</option>
-                                    <option>Utilities</option>
-                                    <option>Gas</option>
-                                    <option>Repairs</option>
-                                    <option>Subscriptions</option>
-                                    <option>Tithing</option>
-                                    <option>Savings</option>
-                                    <option>Dates</option>
-                                    <option>School</option>
-                                    <option>Entertainment</option>
-                                    <option>Eating out</option>
-                                    <option>Shopping</option>
-                                    <option>Other</option>
+                                <label for="category_id" class="form-label">Category</label>
+                                <select name="category_id" class="form-select" id="category_id">
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.label }}</option>
+                                    {% endfor %}
                                 </select>
                                 <div class="invalid-feedback">
                                     Valid category required

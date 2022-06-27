@@ -23,7 +23,7 @@ def create_app(test_config=None):
     with suppress(OSError):
         os.makedirs(app.instance_path)
 
-    from src import db
+    from src.database import db
 
     db.init_app(app)
 

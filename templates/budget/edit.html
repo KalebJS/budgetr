@@ -123,21 +123,10 @@
                                 <label for="category" class="form-label">Category:
                                     <em>{{ transaction.category }}</em></label>
                                 <select name="category" class="form-select" id="category" required>
-                                    <option>{{ transaction.category }}</option>
-                                    <option>Income</option>
-                                    <option>Groceries</option>
-                                    <option>Utilities</option>
-                                    <option>Gas</option>
-                                    <option>Repairs</option>
-                                    <option>Subscriptions</option>
-                                    <option>Tithing</option>
-                                    <option>Savings</option>
-                                    <option>Dates</option>
-                                    <option>School</option>
-                                    <option>Entertainment</option>
-                                    <option>Eating out</option>
-                                    <option>Shopping</option>
-                                    <option>Other</option>
+                                    <option{{ transaction.category_id }}>{{ transaction.category }}</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}">{{ category.label }}</option>
+                                    {% endfor %}
                                 </select>
                                 <div class="invalid-feedback">
                                     Valid category required

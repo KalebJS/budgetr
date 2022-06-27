@@ -3,8 +3,9 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, flash, url_for, redirect
 from pydantic import ValidationError
 
-from src.db import get_db
-from .models import Transaction
+from src.classifier import update_classification, classify
+from src.database.db import get_db, DBUtils
+from src.database.models import Transaction
 
 bp = Blueprint("budget", __name__)
 
@@ -16,40 +17,44 @@ def index():
     if request.method == "POST":
         try:
             transaction = Transaction(**request.form)
+            transaction = classify(transaction)
             db.execute(
-                "INSERT INTO expense_income (user_id, title, value, category, value_type) VALUES "
+                "INSERT INTO transactions (user_id, title, value, category_id, value_type) VALUES "
                 "('kalebjs', ?, ?, ?, ?);",
-                (transaction.title, transaction.value, transaction.category, transaction.value_type),
+                (transaction.title, transaction.value, transaction.category_id, transaction.value_type),
             )
             db.commit()
         except ValidationError as e:
             flash(str(e))
 
     exp_inc_list = db.execute(
-        "SELECT * FROM expense_income WHERE created BETWEEN datetime('now', 'start of month') AND "
+        "SELECT * FROM transactions WHERE created BETWEEN datetime('now', 'start of month') AND "
         "datetime('now', 'localtime', '+1 day');"
     ).fetchall()
     transactions = [Transaction(**row) for row in exp_inc_list]
-    return render_template("budget/index.html", transactions=transactions)
+    categories = DBUtils.get_categories()
+    return render_template("budget/index.html", transactions=transactions, categories=categories)
 
 
 @bp.route("/edit/<int:transaction_id>", methods=("GET", "POST"))
 def edit(transaction_id):
     db = get_db()
 
+    original = Transaction(**db.execute("SELECT * FROM transactions WHERE id = ?;", (transaction_id,)).fetchone())
     if request.method == "POST":
         try:
-            transaction = Transaction(**request.form)
-            transaction.created = datetime.strptime(request.form["date"], "%Y-%m-%d")
+            updated = Transaction(**request.form)
+            update_classification(original, updated)
+            updated.created = datetime.strptime(request.form["date"], "%Y-%m-%d")
             db.execute(
-                "UPDATE expense_income SET title = ?, value = ?, category = ?, value_type = ?, created = ? WHERE "
+                "UPDATE transactions SET title = ?, value = ?, category_id = ?, value_type = ?, created = ? WHERE "
                 "id = ?;",
                 (
-                    transaction.title,
-                    transaction.value,
-                    transaction.category,
-                    transaction.value_type,
-                    transaction.created,
+                    updated.title,
+                    updated.value,
+                    updated.category_id,
+                    updated.value_type,
+                    updated.created,
                     transaction_id,
                 ),
             )
@@ -57,13 +62,13 @@ def edit(transaction_id):
         except ValidationError as e:
             flash(str(e))
 
-    transaction = Transaction(**db.execute("SELECT * FROM expense_income WHERE id = ?;", (transaction_id,)).fetchone())
-    return render_template("budget/edit.html", transaction=transaction)
+    categories = DBUtils.get_categories()
+    return render_template("budget/edit.html", transaction=original, categories=categories)
 
 
 @bp.route("/delete/<int:transaction_id>", methods=("GET",))
 def delete(transaction_id):
     db = get_db()
-    db.execute("DELETE FROM expense_income WHERE id = ?;", (transaction_id,))
+    db.execute("DELETE FROM transactions WHERE id = ?;", (transaction_id,))
     db.commit()
     return redirect(url_for("index"))

@@ -1,8 +1,12 @@
 import sqlite3
+from functools import cache
+from typing import List
 
 import click
 from flask import current_app, g
 from flask.cli import with_appcontext
+
+from .models import Category
 
 
 def get_db():
@@ -40,3 +44,21 @@ def init_db_command():
 def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
+
+
+class DBUtils:
+    @staticmethod
+    @cache
+    def get_category_by_id(category_id: int) -> Category:
+        db = get_db()
+        result = db.execute(
+            "SELECT * FROM categories WHERE id = ?;",
+            (category_id,),
+        ).fetchone()
+        return Category(**result)
+
+    @staticmethod
+    def get_categories() -> List[Category]:
+        db = get_db()
+        results = db.execute("SELECT * FROM categories;").fetchall()
+        return [Category(**result) for result in results if result["id"] != -1]

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, List
 
 from pydantic import BaseModel, validator
 
@@ -7,8 +7,8 @@ from pydantic import BaseModel, validator
 class Transaction(BaseModel):
     title: str
     value: float
-    category: str
-    value_type: str
+    category_id: int = -1
+    value_type: str = None
     id: int = None
     user_id: str = None
     created: datetime = None
@@ -23,12 +23,6 @@ class Transaction(BaseModel):
     def has_value(cls, v):
         if not v:
             raise ValueError("value must be a number")
-        return v
-
-    @validator("category")
-    def has_category(cls, v):
-        if not v:
-            raise ValueError("category must be a string")
         return v
 
     @validator("title")
@@ -52,3 +46,44 @@ class Transaction(BaseModel):
     @property
     def formatted_value(self):
         return f"{self.value:,.2f}"
+
+    @property
+    def category(self):
+        from .db import DBUtils
+        return DBUtils.get_category_by_id(self.category_id).label
+
+
+class Category(BaseModel):
+    id: int
+    label: str
+    is_expense: bool
+    is_annual: bool
+    is_discretionary: bool
+
+
+class WeightedCategory(BaseModel):
+    category_id: int
+    weight: int
+
+    def __lt__(self, other):
+        return self.weight < other.weight
+
+
+class CategoryMapping(BaseModel):
+    id: int
+    word: str
+    part_of_speech: str
+    categories: List[WeightedCategory]
+
+    @validator("part_of_speech")
+    def part_of_speech_to_upper(cls, v):
+        if v not in ["NOUN", "PROPN"]:
+            raise ValueError("part_of_speech must be one of NOUN or PROPN")
+        return v
+
+    @property
+    def weight(self):
+        return sum(c.weight for c in self.categories)
+
+    def __lt__(self, other):
+        return self.weight < other.weight
