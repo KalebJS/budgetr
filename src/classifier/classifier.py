@@ -49,9 +49,7 @@ def classify(transaction: Transaction) -> Transaction:
     found = set()
     category_mapping_list: List[CategoryMapping] = []
     for word in words:
-        if result := db.execute(
-            "SELECT * FROM categorical_mapping WHERE word = ?", (word,)
-        ).fetchone():
+        if result := db.execute("SELECT * FROM categorical_mapping WHERE word = ?", (word,)).fetchone():
             category_mapping_list.append(CategoryMapping(**result))
             found.add(word)
 
@@ -122,9 +120,7 @@ def update_classification(original: Transaction, updated: Transaction) -> None:
     category_mapping_list: List[CategoryMapping] = []
     found = set()
     for word in words:
-        if result := db.execute(
-            "SELECT * FROM categorical_mapping WHERE word = ?", (word,)
-        ).fetchone():
+        if result := db.execute("SELECT * FROM categorical_mapping WHERE word = ?", (word,)).fetchone():
             category_mapping_list.append(CategoryMapping(**result))
             found.add(word)
 

@@ -17,7 +17,6 @@ CREATE TABLE transactions
     created     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     title       TEXT      NOT NULL,
     value       INT       NOT NULL,
-    value_type  TEXT      NOT NULL,
     category_id INT       NOT NULL,
     FOREIGN KEY (user_id) REFERENCES user (id)
 );

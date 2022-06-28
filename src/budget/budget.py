@@ -19,9 +19,9 @@ def index():
             transaction = Transaction(**request.form)
             transaction = classify(transaction)
             db.execute(
-                "INSERT INTO transactions (user_id, title, value, category_id, value_type) VALUES "
-                "('kalebjs', ?, ?, ?, ?);",
-                (transaction.title, transaction.value, transaction.category_id, transaction.value_type),
+                "INSERT INTO transactions (user_id, title, value, category_id) VALUES "
+                "('kalebjs', ?, ?, ?);",
+                (transaction.title, transaction.value, transaction.category_id),
             )
             db.commit()
         except ValidationError as e:
@@ -34,7 +34,10 @@ def index():
     ).fetchall()
     transactions = [Transaction(**row) for row in exp_inc_list]
     categories = DBUtils.get_total_by_category()
-    return render_template("budget/index.html", transactions=transactions, categories=categories)
+    sorted_categories = sorted([c for c in categories if c.total > 0], reverse=True)
+    return render_template(
+        "budget/index.html", transactions=transactions, categories=categories, sorted_categories=sorted_categories
+    )
 
 
 @bp.route("/edit/<int:transaction_id>", methods=("GET", "POST"))
@@ -48,13 +51,12 @@ def edit(transaction_id):
             update_classification(transaction, updated)
             updated.created = datetime.strptime(request.form["date"], "%Y-%m-%d")
             db.execute(
-                "UPDATE transactions SET title = ?, value = ?, category_id = ?, value_type = ?, created = ? WHERE "
+                "UPDATE transactions SET title = ?, value = ?, category_id = ?, created = ? WHERE "
                 "id = ?;",
                 (
                     updated.title,
                     updated.value,
                     updated.category_id,
-                    updated.value_type,
                     updated.created,
                     transaction_id,
                 ),

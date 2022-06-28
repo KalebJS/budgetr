@@ -9,16 +9,9 @@ class Transaction(BaseModel):
     title: str
     value: float
     category_id: int = -1
-    value_type: str = None
     id: int = None
     user_id: str = None
     created: datetime = None
-
-    @validator("value_type")
-    def has_value_type(cls, v):
-        if not v:
-            raise ValueError("value_type must be income or expense")
-        return v
 
     @validator("value")
     def has_value(cls, v):
@@ -51,7 +44,16 @@ class Transaction(BaseModel):
     @property
     def category(self):
         from .db import DBUtils
+
         return DBUtils.get_category_by_id(self.category_id).label
+
+    @property
+    def value_type(self):
+        from .db import DBUtils
+
+        if DBUtils.get_category_by_id(self.category_id).is_expense:
+            return "Expense"
+        return "Income"
 
 
 class Category(BaseModel):
@@ -65,6 +67,9 @@ class Category(BaseModel):
     @property
     def formatted_total(self):
         return f"{self.total:,.2f}"
+
+    def __lt__(self, other):
+        return self.total < other.total
 
 
 class WeightedCategory(BaseModel):
