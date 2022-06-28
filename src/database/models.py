@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Any, List, Union
+from typing import List, Union
 
 from pydantic import BaseModel, validator
 
@@ -65,6 +65,7 @@ class Category(BaseModel):
     @property
     def formatted_total(self):
         return f"{self.total:,.2f}"
+
 
 class WeightedCategory(BaseModel):
     category_id: int
