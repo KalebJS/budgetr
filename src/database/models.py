@@ -55,6 +55,9 @@ class Transaction(BaseModel):
             return "Expense"
         return "Income"
 
+    def __lt__(self, other):
+        return self.created < other.created
+
 
 class Category(BaseModel):
     id: int
@@ -84,13 +87,6 @@ class CategoryMapping(BaseModel):
     id: int
     word: str
     categories: Union[str, List[WeightedCategory]]
-
-    @property
-    def weight(self):
-        return sum(c.weight for c in self.categories)
-
-    def __lt__(self, other):
-        return self.weight < other.weight
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

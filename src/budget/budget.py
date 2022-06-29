@@ -32,7 +32,7 @@ def index():
         "SELECT * FROM transactions WHERE created BETWEEN datetime('now', 'start of month') AND "
         "datetime('now', 'localtime', '+1 day');"
     ).fetchall()
-    transactions = [Transaction(**row) for row in exp_inc_list]
+    transactions = sorted([Transaction(**row) for row in exp_inc_list])
     categories = DBUtils.get_total_by_category()
     sorted_categories = sorted([c for c in categories if c.total > 0], reverse=True)
     return render_template(

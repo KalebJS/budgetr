@@ -59,7 +59,7 @@ def classify(transaction: Transaction) -> Transaction:
     rankings = defaultdict(lambda: 0)
     for mapping in category_mapping_list:
         for category in mapping.categories:
-            rankings[category.category_id] += mapping.weight
+            rankings[category.category_id] += category.weight
 
     # if there are rankings, get the highest ranking, otherwise return the transaction with category of unknown
     if rankings:
