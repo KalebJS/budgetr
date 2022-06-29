@@ -52,8 +52,8 @@ class Transaction(BaseModel):
         from .db import DBUtils
 
         if DBUtils.get_category_by_id(self.category_id).is_expense:
-            return "Expense"
-        return "Income"
+            return "🍎"
+        return "🍏"
 
     def __lt__(self, other):
         return self.created < other.created
