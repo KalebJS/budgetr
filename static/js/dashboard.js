@@ -35,6 +35,11 @@ $(document).ready(function () {
                 legend: {
                     display: false,
                 },
+                elements: {
+                    arc: {
+                        borderWidth: 0
+                    }
+                }
             }
         });
     }
