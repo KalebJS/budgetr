@@ -14,20 +14,6 @@ bp = Blueprint("budget", __name__)
 def index():
     db = get_db()
 
-    if request.method == "POST":
-        try:
-            transaction = Transaction(**request.form)
-            transaction = classify(transaction)
-            db.execute(
-                "INSERT INTO transactions (user_id, title, value, category_id) VALUES "
-                "('kalebjs', ?, ?, ?);",
-                (transaction.title, transaction.value, transaction.category_id),
-            )
-            db.commit()
-        except ValidationError as e:
-            flash(str(e))
-            raise e
-
     exp_inc_list = db.execute(
         "SELECT * FROM transactions WHERE created BETWEEN datetime('now', 'start of month') AND "
         "datetime('now', 'localtime', '+1 day');"
@@ -35,8 +21,13 @@ def index():
     transactions = sorted([Transaction(**row) for row in exp_inc_list])
     categories = DBUtils.get_total_by_category()
     sorted_categories = sorted([c for c in categories if c.total > 0], reverse=True)
+    total = f"{sum(c.total * -1 if c.is_expense else c.total for c in categories):,.2f}"
     return render_template(
-        "budget/index.html", transactions=transactions, categories=categories, sorted_categories=sorted_categories
+        "budget/index.html",
+        transactions=transactions,
+        categories=categories,
+        sorted_categories=sorted_categories,
+        net=total,
     )
 
 
@@ -51,8 +42,7 @@ def edit(transaction_id):
             update_classification(transaction, updated)
             updated.created = datetime.strptime(request.form["date"], "%Y-%m-%d")
             db.execute(
-                "UPDATE transactions SET title = ?, value = ?, category_id = ?, created = ? WHERE "
-                "id = ?;",
+                "UPDATE transactions SET title = ?, value = ?, category_id = ?, created = ? WHERE " "id = ?;",
                 (
                     updated.title,
                     updated.value,
@@ -76,3 +66,23 @@ def delete(transaction_id):
     db.execute("DELETE FROM transactions WHERE id = ?;", (transaction_id,))
     db.commit()
     return redirect(url_for("index"))
+
+
+@bp.route("/add", methods=("GET", "POST"))
+def add():
+    db = get_db()
+
+    if request.method == "POST":
+        try:
+            transaction = Transaction(**request.form)
+            transaction = classify(transaction)
+            db.execute(
+                "INSERT INTO transactions (user_id, title, value, category_id) VALUES " "('kalebjs', ?, ?, ?);",
+                (transaction.title, transaction.value, transaction.category_id),
+            )
+            db.commit()
+        except ValidationError as e:
+            flash(str(e))
+            raise e
+
+    return render_template("budget/add.html")
